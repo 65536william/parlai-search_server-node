@@ -4,8 +4,12 @@ const { parse } = require("querystring");
 const fetch = require("node-fetch");
 const { convert } = require("html-to-text");
 
-const hostname = "127.0.0.1";
-const port = 3000;
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
+var port = process.env.PORT || 8080;
+
 const SUBSCRIPTION_KEY = process.env.AZURE_SUBSCRIPTION_KEY;
 if (!SUBSCRIPTION_KEY) {
   throw new Error("AZURE_SUBSCRIPTION_KEY is not set.");
@@ -32,9 +36,17 @@ const server = http.createServer((req, res) => {
     });
     req.on("end", () => {
       const { q, n } = parse(data);
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "text/plain");
-      res.end("Hello World");
+      try {
+        const fetchedPages = bingWebSearch(q, n);
+        res.statusCode = 200;
+        if (fetchedPages.length) {
+          res.json(fetchedPages);
+        } else {
+          res.json("No result.");
+        }
+      } catch {
+        res.json("The search failed.");
+      }
     });
   } else {
     res.statusCode = 500;
@@ -42,8 +54,8 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(port, () => {
+  console.log(`Server running at ${port}`);
 });
 
 function bingWebSearch(query, count) {
@@ -71,7 +83,7 @@ function bingWebSearch(query, count) {
             content: await getHTMLAsText(page.url),
           }))
         );
-        console.log(fetchedPages);
+        return fetchedPages;
       });
       res.on("error", (e) => {
         console.log("Error: " + e.message);
@@ -80,8 +92,3 @@ function bingWebSearch(query, count) {
     }
   );
 }
-
-bingWebSearch("garibaldi", 5);
-
-//function for calling server
-// there is query_term and n which need to go as 'data' to server i.e. this
