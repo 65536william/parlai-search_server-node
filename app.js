@@ -6,7 +6,7 @@ const { convert } = require("html-to-text");
 
 const hostname = "127.0.0.1";
 const port = 3000;
-const SUBSCRIPTION_KEY = "3b8a48d19dd34400a7a68afab2d6b914";
+const SUBSCRIPTION_KEY = process.env.AZURE_SUBSCRIPTION_KEY;
 if (!SUBSCRIPTION_KEY) {
   throw new Error("AZURE_SUBSCRIPTION_KEY is not set.");
 }
