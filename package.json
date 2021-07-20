@@ -1,0 +1,15 @@
+{
+  "name": "parlai-search_server-node",
+  "version": "1.0.0",
+  "description": "Search engine for ParlAI (Blender Bot 2.0) built in Node.js",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "wjeliot",
+  "license": "ISC",
+  "dependencies": {
+    "html-to-text": "^8.0.0",
+    "node-fetch": "^2.6.1"
+  }
+}
