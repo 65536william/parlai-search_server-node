@@ -39,22 +39,11 @@ const server = http.createServer((req, res) => {
     });
     req.on("end", () => {
       const { q, n } = parse(data);
-      try {
-        const fetchedPages = bingWebSearch(q, n);
-        console.log(typeof fetchedPages);
-        res.statusCode = 200;
-        if (fetchedPages.length) {
-          res.end(fetchedPages);
-        } else {
-          res.end("No result.");
-        }
-      } catch (error) {
-        console.log(error);
-        res.end("The search failed.");
-      }
+      bingWebSearch(q, n)
+        .then((fetchedPages) => res.end(JSON.stringify(fetchedPages)))
+        .catch((error) => res.end(JSON.stringify(error)));
     });
   } else {
-    res.statusCode = 500;
     res.end("Must use POST method.");
   }
 });
@@ -64,36 +53,45 @@ server.listen(port, () => {
 });
 
 function bingWebSearch(query, count) {
-  return https.get(
-    {
-      hostname: "api.bing.microsoft.com",
-      path:
-        "/v7.0/search?q=" +
-        encodeURIComponent(query) +
-        "&count=" +
-        encodeURIComponent(count) +
-        "&responseFilter=webpages",
-      headers: { "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY },
-    },
-    (res) => {
-      let body = "";
-      res.on("data", (part) => (body += part));
-      res.on("end", async () => {
-        const webpages = JSON.parse(body).webPages.value;
-        const fetchedPages = await Promise.all(
-          webpages.map(async (page, index) => ({
-            index: index,
-            url: page.url,
-            title: page.name,
-            content: await getHTMLAsText(page.url),
-          }))
-        );
-        return fetchedPages;
-      });
-      res.on("error", (e) => {
-        console.log("Error: " + e.message);
-        throw e;
-      });
-    }
+  console.log(
+    "/v7.0/search?q=" +
+      encodeURIComponent(query) +
+      "&answerCount=" +
+      encodeURIComponent(count) +
+      "&responseFilter=webpages"
   );
+  return new Promise((resolve, reject) => {
+    https.get(
+      {
+        hostname: "api.bing.microsoft.com",
+        path:
+          "/v7.0/search?q=" +
+          encodeURIComponent(query) +
+          "&count=" +
+          encodeURIComponent(count) +
+          "&responseFilter=webpages",
+        headers: { "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY },
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (part) => (body += part));
+        res.on("end", async () => {
+          const webpages = JSON.parse(body).webPages.value;
+          const fetchedPages = await Promise.all(
+            webpages.map(async (page, index) => ({
+              index: index,
+              url: page.url,
+              title: page.name,
+              content: await getHTMLAsText(page.url),
+            }))
+          );
+          resolve(fetchedPages);
+        });
+        res.on("error", (e) => {
+          console.log("Error: " + e.message);
+          reject(e.message);
+        });
+      }
+    );
+  });
 }
