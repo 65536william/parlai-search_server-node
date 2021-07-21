@@ -47,7 +47,8 @@ const server = http.createServer((req, res) => {
         } else {
           res.end("No result.");
         }
-      } catch {
+      } catch (error) {
+        console.log(error);
         res.end("The search failed.");
       }
     });
