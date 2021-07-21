@@ -41,6 +41,7 @@ const server = http.createServer((req, res) => {
       const { q, n } = parse(data);
       try {
         const fetchedPages = bingWebSearch(q, n);
+        console.log(typeof fetchedPages);
         res.statusCode = 200;
         if (fetchedPages.length) {
           res.end(fetchedPages);
@@ -63,7 +64,7 @@ server.listen(port, () => {
 });
 
 function bingWebSearch(query, count) {
-  https.get(
+  return https.get(
     {
       hostname: "api.bing.microsoft.com",
       path:
