@@ -1,3 +1,5 @@
+process.binding("http_parser").HTTPParser =
+  require("http-parser-js").HTTPParser;
 const http = require("http");
 const https = require("https");
 const { parse } = require("querystring");
@@ -25,7 +27,8 @@ async function getHTMLAsText(url) {
         },
         wordwrap: null,
       }).replace(/\n|\r/g, " ")
-    );
+    )
+    .catch((error) => console.log(error));
 }
 
 const server = http.createServer((req, res) => {
