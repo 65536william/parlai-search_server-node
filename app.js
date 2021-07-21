@@ -40,7 +40,13 @@ const server = http.createServer((req, res) => {
     req.on("end", () => {
       const { q, n } = parse(data);
       bingWebSearch(q, n)
-        .then((fetchedPages) => res.end(JSON.stringify(fetchedPages)))
+        .then((fetchedPages) =>
+          res.end(
+            JSON.stringify({
+              response: fetchedPages,
+            })
+          )
+        )
         .catch((error) => res.end(JSON.stringify(error)));
     });
   } else {
