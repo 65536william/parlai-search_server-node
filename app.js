@@ -40,12 +40,12 @@ const server = http.createServer((req, res) => {
         const fetchedPages = bingWebSearch(q, n);
         res.statusCode = 200;
         if (fetchedPages.length) {
-          res.json(fetchedPages);
+          res.end(fetchedPages);
         } else {
-          res.json("No result.");
+          res.end("No result.");
         }
       } catch {
-        res.json("The search failed.");
+        res.end("The search failed.");
       }
     });
   } else {
